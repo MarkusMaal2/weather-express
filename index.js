@@ -7,8 +7,7 @@ class Weather {
 
     async getWeather() {
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.key}`)
-        const responseData = await response.json()
-        return responseData
+        return await response.json()
     }
 
     changeCity(city) {
@@ -30,6 +29,9 @@ const weather = new Weather(initialCity)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, viewsDir))
 
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
+
 app.get('/', (req, res) => {
     weather.getWeather()
         .then(data => {
@@ -43,6 +45,11 @@ app.get('/', (req, res) => {
             })
         })
         .catch(error => console.log(error))
+})
+
+app.post('/', (req, res) => {
+    weather.changeCity(req.body["cityname"])
+    res.redirect('/')
 })
 
 app.listen(3011)
