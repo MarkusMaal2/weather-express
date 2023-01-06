@@ -1,30 +1,39 @@
 
-class Weather {
-    constructor(city) {
-        this.city = city
-        this.key = "f888f2d4b332b94625bd937ba929ae14"
-    }
+//const key = "f888f2d4b332b94625bd937ba929ae14"
+const key = "fakekey"
+let default_city = "Tartu"
 
-    async getWeather() {
-        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.key}`)
-        return await response.json()
-    }
-
-    changeCity(city) {
-        this.city = city
-    }
+const getWeatherDataPromise = (url) => {
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => {
+                return response.json()
+            })
+            .then(data => {
+                let description = data.weather[0].description
+                let city = data.name
+                let temp = Math.round((data.main.temp)-273.35)
+                let result = {
+                    description: description,
+                    city : city,
+                    temp: temp,
+                    error: null
+                }
+                resolve (result)
+            })
+            .catch (error => {
+                reject(error)
+            })
+    })
 }
 
 const express = require('express')
 const app = express()
 
 const path = require('path')
+const {response} = require("express");
 
 const viewsDir = 'views'
-
-const initialCity = "Tartu"
-
-const weather = new Weather(initialCity)
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, viewsDir))
@@ -32,24 +41,18 @@ app.set('views', path.join(__dirname, viewsDir))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
-app.get('/', (req, res) => {
-    weather.getWeather()
-        .then(data => {
-            let description = data.weather[0].description
-            let city = data.name
-            let temp = Math.round(parseFloat(data.main.temp)-273.35)
-            res.render('index', {
-                description: description,
-                city: city,
-                temp: temp
-            })
+app.all('/', (req, res) => {
+    let city = default_city
+    if (req.method === "POST") {
+        city = req.body["cityname"]
+    }
+    getWeatherDataPromise(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`)
+        .then (data => {
+            res.render('index', data)
         })
-        .catch(error => console.log(error))
-})
-
-app.post('/', (req, res) => {
-    weather.changeCity(req.body["cityname"])
-    res.redirect('/')
+        .catch(error => {
+            res.render('index', {error: 'Problem getting data, please try again later'})
+        })
 })
 
 app.listen(3011)

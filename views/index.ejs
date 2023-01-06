@@ -1,11 +1,18 @@
 <%- include('header'); %>
 <div class="container">
     <div class="row">
+        <% if (error === null) { %>
         <div id="weather">
             <div id="description"><%= description%></div>
             <h1 id="temp"><%= temp %></h1>
             <div id="location"><%= city %></div>
         </div>
+        <% } else { %>
+            <div id="weather">
+                <p><%= error %></p>
+                <a href="/">Try again</a>
+            </div>
+        <% } %>
     </div>
     <hr>
     <div class="row">
