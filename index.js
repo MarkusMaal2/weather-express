@@ -1,6 +1,6 @@
 
-//const key = "f888f2d4b332b94625bd937ba929ae14"
-const key = "fakekey"
+const key = "f888f2d4b332b94625bd937ba929ae14"
+//const key = "fakekey"
 let default_city = "Tartu"
 
 const getWeatherDataPromise = (url) => {
@@ -37,6 +37,9 @@ const viewsDir = 'views'
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, viewsDir))
+
+// setup static public directory
+app.use(express.static('public'))
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
